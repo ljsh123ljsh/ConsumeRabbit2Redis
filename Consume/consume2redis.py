@@ -9,7 +9,10 @@ def callback(ch, method, properties, body):
     ch.basic_ack(delivery_tag=method.delivery_tag)
     produce2redis(body)
     dates = body.split(',')
-    codingredis('a'+dates[1], 'p'+dates[4], strftime('%Y-%m-%d %H:%M:%S', localtime(float(dates[2]))))
+    try:
+        codingredis('a'+dates[1], 'p'+dates[4], strftime('%Y-%m-%d %H:%M:%S', localtime(float(dates[2]))))
+    except:
+        pass
     return body
 
 def produce2redis(data):
@@ -19,6 +22,8 @@ def produce2redis(data):
 def codingredis(id, port, data):
     r = StrictRedis(connection_pool=REDIS.REDIS_pool)
     r.lpush(id+':'+port, data)
+    print((id+':'+port, data))
+
 
 class rabbitmqchannel():
     def __init__(self):
