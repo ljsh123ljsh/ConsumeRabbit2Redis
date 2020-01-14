@@ -1,6 +1,7 @@
 import pika
 from redis import StrictRedis
 from DB import rabbitmq
+from time import strftime, localtime
 from Consume import *
 
 def callback(ch, method, properties, body):
@@ -8,16 +9,16 @@ def callback(ch, method, properties, body):
     ch.basic_ack(delivery_tag=method.delivery_tag)
     produce2redis(body)
     dates = body.split(',')
-    codingredis('a'+dates[1], 'p'+dates[4])
+    codingredis('a'+dates[1], 'p'+dates[4], strftime('%Y-%m-%d %H:%M:%S', localtime(float(dates[2]))))
     return body
 
 def produce2redis(data):
     r = StrictRedis(connection_pool=REDIS.REDIS_pool)
     r.lpush(RABBITMQ.exchange, data)
 
-def codingredis(id, port):
+def codingredis(id, port, data):
     r = StrictRedis(connection_pool=REDIS.REDIS_pool)
-    r.lpush(id+':'+port, '1')
+    r.lpush(id+':'+port, data)
 
 class rabbitmqchannel():
     def __init__(self):
